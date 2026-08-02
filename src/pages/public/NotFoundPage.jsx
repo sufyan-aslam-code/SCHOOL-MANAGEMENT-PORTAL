@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home, Award } from 'lucide-react';
-import { SCHOOL_CONSTANTS } from '../../constants/schoolData';
+import { useSettings } from '../../hooks/useSettings';
 
 export const NotFoundPage = () => {
+  const { settings } = useSettings();
+  const schoolName = settings?.school_name || 'Portal';
+
   return (
-    // Added pt-32 sm:pt-36 and min-h-screen to clear the fixed navbar properly
     <div className="min-h-screen bg-slate-50 pt-32 sm:pt-36 pb-16 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-6 bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-xl text-center">
         <div className="w-20 h-20 rounded-2xl bg-teal-50 text-teal-700 border border-teal-100 mx-auto flex items-center justify-center font-black text-3xl shadow-inner">
@@ -15,7 +17,7 @@ export const NotFoundPage = () => {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Page Not Found</h1>
           <p className="text-slate-500 text-xs sm:text-sm leading-relaxed max-w-sm mx-auto font-medium">
-            The page you are looking for does not exist or has been moved within the {SCHOOL_CONSTANTS.NAME} portal.
+            The page you are looking for does not exist or has been moved within the {schoolName} portal.
           </p>
         </div>
 

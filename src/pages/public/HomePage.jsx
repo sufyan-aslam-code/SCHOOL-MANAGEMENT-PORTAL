@@ -13,9 +13,19 @@ import {
   Laptop
 } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
+import { useStudents } from '../../hooks/useSchoolData';
 
 export const HomePage = () => {
   const { settings, isLoading } = useSettings();
+  const { students, loading: studentsLoading } = useStudents();
+
+  const formatStudentCount = (count) => {
+    if (count <= 0) return '0+';
+    const rounded = Math.floor(count / 10) * 10;
+    return `${rounded}+`;
+  };
+
+  const studentCount = studentsLoading ? '250+' : formatStudentCount(students.length);
 
   return (
     <div className="space-y-12 sm:space-y-16 pb-16 bg-slate-50 min-h-screen pt-20 sm:pt-24 overflow-x-hidden">
@@ -50,7 +60,7 @@ export const HomePage = () => {
                 <div className="text-[10px] sm:text-xs text-slate-300 font-medium uppercase tracking-wider mt-1">Established</div>
               </div>
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center hover:bg-white/10 transition-colors">
-                <div className="text-xl sm:text-3xl font-black text-amber-400">250+</div>
+                <div className="text-xl sm:text-3xl font-black text-amber-400">{studentCount}</div>
                 <div className="text-[10px] sm:text-xs text-slate-300 font-medium uppercase tracking-wider mt-1">Students</div>
               </div>
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center hover:bg-white/10 transition-colors">
