@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  
+  --color-primary: #0F766E;
+  --color-primary-dark: #0D655E;
+  --color-primary-light: #115E59;
+  
+  --color-secondary: #14532D;
+  --color-secondary-dark: #0F3E22;
+  --color-secondary-light: #166534;
+  
+  --color-accent: #F59E0B;
+  --color-accent-hover: #D97706;
+  
+  --color-gov-bg: #F8FAFC;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background-color: var(--color-gov-bg);
+    color: #1E293B;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Print Styles for DMC */
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  .printable-area {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
