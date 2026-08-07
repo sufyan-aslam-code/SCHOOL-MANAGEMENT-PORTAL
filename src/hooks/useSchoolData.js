@@ -55,10 +55,13 @@ export function useStudents(classId = null, sessionId = null) {
                 .from('students')
                 .select(`
                     id,
+                    admission_no,
                     name,
                     father_name,
                     roll_no,
                     gender,
+                    doa,
+                    dob,
                     class_id,
                     session_id,
                     result_file_url,

@@ -153,7 +153,7 @@ export const HomePage = () => {
               </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900">{settings?.principal_name || 'Headmaster Name'}</h3>
-                <p className="text-teal-700 font-medium text-xs sm:text-sm">Headmaster, {settings?.school_name || 'GHS Kasala'}</p>
+                <p className="text-teal-700 font-medium text-xs sm:text-sm">HEADMASTER, {settings?.school_name || 'GHS Kasala'}</p>
               </div>
             </div>
 

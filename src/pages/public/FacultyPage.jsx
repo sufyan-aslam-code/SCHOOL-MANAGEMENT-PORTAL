@@ -6,8 +6,7 @@ import {
   Loader2,
   AlertCircle,
   FileText,
-  Search,
-  Briefcase
+  Search
 } from 'lucide-react';
 import { useFaculty } from '../../hooks/useFaculty';
 
@@ -141,7 +140,7 @@ export const FacultyPage = () => {
                     </h3>
                   </div>
 
-                  {/* Details Section */}
+                  {/* Public Details Section (Removed Experience) */}
                   <div className="text-[11px] sm:text-xs space-y-2 text-slate-600 border-t border-slate-100 pt-4 w-full text-left">
                     <div className="flex items-center gap-2.5 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
                       <GraduationCap className="w-4 h-4 text-teal-600 shrink-0" />
@@ -150,10 +149,6 @@ export const FacultyPage = () => {
                     <div className="flex items-center gap-2.5 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
                       <BookOpen className="w-4 h-4 text-amber-600 shrink-0" />
                       <span className="truncate font-medium" title={member.subject_specialization}>{member.subject_specialization || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2.5 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
-                      <Briefcase className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="font-medium">Exp: {member.experience_years ? `${member.experience_years} Years` : 'N/A'}</span>
                     </div>
                   </div>
                 </div>

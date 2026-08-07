@@ -9,7 +9,11 @@ import {
   ShieldAlert,
   ChevronRight,
   ExternalLink,
-  Award
+  Award,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube
 } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
 
@@ -17,12 +21,19 @@ export const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { settings } = useSettings();
 
+  // Check if at least one social media link exists in the database
+  const hasSocialLinks = 
+    settings?.facebook_url || 
+    settings?.twitter_url || 
+    settings?.instagram_url || 
+    settings?.youtube_url;
+
   return (
     <footer className="bg-slate-900 text-slate-300 border-t-4 border-teal-600">
       {/* Upper Footer: School Info & Quick Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
 
-        {/* Column 1: Branding & Summary */}
+        {/* Column 1: Branding, Summary & Socials */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-700 to-emerald-900 flex items-center justify-center text-amber-400 shadow-lg flex-shrink-0">
@@ -49,6 +60,37 @@ export const Footer = () => {
               <span>Online Result Portal</span>
             </Link>
           </div>
+
+          {/* Dynamic Social Media Section */}
+          {hasSocialLinks && (
+            <div className="pt-4 mt-4 border-t border-slate-800">
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">
+                Connect With Us
+              </h3>
+              <div className="flex gap-2.5">
+                {settings?.facebook_url && (
+                  <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-colors" title="Facebook">
+                    <Facebook className="w-4 h-4" />
+                  </a>
+                )}
+                {settings?.twitter_url && (
+                  <a href={settings.twitter_url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-sky-500 hover:text-white transition-colors" title="Twitter/X">
+                    <Twitter className="w-4 h-4" />
+                  </a>
+                )}
+                {settings?.instagram_url && (
+                  <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-pink-600 hover:text-white transition-colors" title="Instagram">
+                    <Instagram className="w-4 h-4" />
+                  </a>
+                )}
+                {settings?.youtube_url && (
+                  <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-red-600 hover:text-white transition-colors" title="YouTube">
+                    <Youtube className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Column 2: Quick Links */}

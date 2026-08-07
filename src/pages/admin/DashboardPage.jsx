@@ -7,6 +7,9 @@ import { StudentsTab } from "../../components/admin/StudentsTab";
 import { ResultsTab } from "../../components/admin/ResultsTab";
 import { FacultyTab } from "../../components/admin/FacultyTab";
 import { SettingsTab } from "../../components/admin/SettingsTab";
+import { GalleryTab } from "../../components/admin/GalleryTab";
+import { AnnouncementsTab } from "../../components/admin/AnnouncementsTab";
+
 import { useSettings } from '../../hooks/useSettings';
 
 export const DashboardPage = () => {
@@ -40,14 +43,9 @@ export const DashboardPage = () => {
         {currentTab === 'results' && <ResultsTab />}
         {currentTab === 'faculty' && <FacultyTab />}
         {currentTab === 'settings' && <SettingsTab />}
+        {currentTab === 'gallery' && <GalleryTab />}
+        {currentTab === 'announcements' && <AnnouncementsTab />}
 
-        {/* Placeholder for remaining unimplemented tabs */}
-        {(currentTab === 'notices' || currentTab === 'gallery') && (
-          <div className="p-10 text-center text-slate-500 flex flex-col items-center justify-center h-full">
-            <p className="font-bold text-lg text-slate-700 capitalize">{currentTab} Component</p>
-            <p className="text-sm">This module is pending implementation.</p>
-          </div>
-        )}
 
       </div>
     </div>

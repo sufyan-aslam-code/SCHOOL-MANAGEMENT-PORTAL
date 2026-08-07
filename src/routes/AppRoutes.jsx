@@ -21,6 +21,8 @@ const ContactPage = lazy(() => import('../pages/public/ContactPage'));
 const ResultCheckPage = lazy(() => import('../pages/public/ResultCheckPage'));
 const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'));
 const StudentsPage = lazy(() => import('../pages/public/StudentsPage'));
+const GalleryPage = lazy(() => import('../pages/public/GalleryPage'));
+const AnnouncementPage = lazy(() => import('../pages/public/PublicNoticeBoard'));
 
 /* ===========================
    Lazy Loaded Admin Pages
@@ -53,6 +55,8 @@ export const AppRoutes = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/results" element={<ResultCheckPage />} />
           <Route path="/students" element={<StudentsPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/announcements" element={<AnnouncementPage />} />
         </Route>
 
         {/* ===========================
@@ -82,17 +86,6 @@ export const AppRoutes = () => {
               element={<DashboardPage />}
             />
 
-            {/*
-              Future Admin Pages
-
-              <Route path="students" element={<StudentsPage />} />
-              <Route path="faculty" element={<FacultyManagementPage />} />
-              <Route path="results" element={<ResultsPage />} />
-              <Route path="gallery" element={<GalleryManagementPage />} />
-              <Route path="notices" element={<NoticesManagementPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="audit-logs" element={<AuditLogsPage />} />
-            */}
           </Route>
         </Route>
 

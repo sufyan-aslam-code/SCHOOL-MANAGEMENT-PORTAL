@@ -1,9 +1,39 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit, Briefcase, X, Upload, FileSpreadsheet, AlertTriangle, Search, FileCheck, RefreshCw, FileX } from 'lucide-react';
-import { useFaculty } from '../../hooks/useFaculty';
-import { supabase } from '../../lib/supabase';
+import {
+    Briefcase,
+    Search,
+    Loader2,
+    AlertTriangle,
+    FileSpreadsheet,
+    Trash2,
+    X,
+    Upload,
+    Plus,
+    Edit,
+    RefreshCw
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import Papa from 'papaparse';
+import { useFaculty } from '../../hooks/useFaculty';
+import { supabase } from '../../lib/supabase';
+
+// --- Helper: Convert CSV Date (DD/MM/YYYY) to DB Date (YYYY-MM-DD) ---
+const formatCSVDateForDB = (dateStr) => {
+    if (!dateStr) return null;
+    const trimmed = String(dateStr).trim();
+    
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+    const parts = trimmed.split(/[\/\-]/);
+    if (parts.length === 3) {
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        let year = parts[2];
+        if (year.length === 2) year = `20${year}`;
+        return `${year}-${month}-${day}`;
+    }
+    return null; 
+};
 
 export const FacultyTab = () => {
     const { faculty = [], isLoading, addFaculty, updateFaculty, deleteFaculty } = useFaculty();
@@ -19,18 +49,28 @@ export const FacultyTab = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [csvFile, setCsvFile] = useState(null);
 
-    // Bulk Delete Scope State (all or specific designation)
     const [deleteScope, setDeleteScope] = useState({ type: 'all', value: '' });
 
+    // Updated Form State
     const [formData, setFormData] = useState({
         name: '',
         designation: '',
         qualification: '',
         subject_specialization: '',
-        experience_years: 0
+        appointment_date: '',
+        charge_date: '',
+        address: ''
     });
 
-    // Helper function to automatically compute display_order based on designation
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    };
+
     const calculateDisplayOrder = (designation = '') => {
         const desig = designation.toLowerCase().trim();
         if (desig.includes('headmaster') || desig.includes('hm') || desig.includes('principal')) return 1;
@@ -50,7 +90,9 @@ export const FacultyTab = () => {
                 designation: member.designation || '',
                 qualification: member.qualification || '',
                 subject_specialization: member.subject_specialization || '',
-                experience_years: member.experience_years || 0
+                appointment_date: member.appointment_date || '',
+                charge_date: member.charge_date || '',
+                address: member.address || ''
             });
         } else {
             setEditingFaculty(null);
@@ -59,13 +101,14 @@ export const FacultyTab = () => {
                 designation: '',
                 qualification: '',
                 subject_specialization: '',
-                experience_years: 0
+                appointment_date: '',
+                charge_date: '',
+                address: ''
             });
         }
         setIsModalOpen(true);
     };
 
-    // --- Inline Single Photo Actions (Add, Replace, Remove) ---
     const handlePhotoUpload = async (member, file) => {
         if (!file) return;
         const loadingToast = toast.loading('Uploading profile photo...');
@@ -121,7 +164,9 @@ export const FacultyTab = () => {
                 designation: formData.designation,
                 qualification: formData.qualification,
                 subject_specialization: formData.subject_specialization,
-                experience_years: parseInt(formData.experience_years, 10) || 0,
+                appointment_date: formData.appointment_date || null,
+                charge_date: formData.charge_date || null,
+                address: formData.address,
                 display_order: calculateDisplayOrder(formData.designation)
             };
 
@@ -208,7 +253,9 @@ export const FacultyTab = () => {
                             designation: designation,
                             qualification: (row.qualification || '').trim(),
                             subject_specialization: (row.subject_specialization || row.specialization || '').trim(),
-                            experience_years: parseInt(row.experience_years || row.experience, 10) || 0,
+                            appointment_date: formatCSVDateForDB(row.appointment_date),
+                            charge_date: formatCSVDateForDB(row.charge_date),
+                            address: (row.address || '').trim(),
                             photo_url: null,
                             display_order: calculateDisplayOrder(designation)
                         };
@@ -235,10 +282,8 @@ export const FacultyTab = () => {
         });
     };
 
-    // Extract unique designations for the filter dropdown & bulk delete scope
     const uniqueDesignations = [...new Set((faculty || []).map(m => m.designation).filter(Boolean))];
 
-    // Filter faculty based on search query and designation filter, then sort by display_order
     const filteredFaculty = (faculty || []).filter((member) => {
         const matchesSearch =
             `${member.name || ''} ${member.qualification || ''} ${member.subject_specialization || ''}`
@@ -259,7 +304,7 @@ export const FacultyTab = () => {
     });
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
             {/* Header & Actions */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
                 <div>
@@ -272,14 +317,14 @@ export const FacultyTab = () => {
                         className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs px-3.5 py-2 rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
                     >
                         <Trash2 className="w-4 h-4" />
-                        <span>Delete All Staff</span>
+                        <span className="hidden sm:inline">Delete All Staff</span>
                     </button>
                     <button
                         onClick={() => setIsCsvModalOpen(true)}
                         className="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-lg shadow flex items-center gap-1.5 transition-colors"
                     >
                         <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                        <span>Import CSV</span>
+                        <span className="hidden sm:inline">Import CSV</span>
                     </button>
                     <button
                         onClick={() => handleOpenModal()}
@@ -292,7 +337,7 @@ export const FacultyTab = () => {
             </div>
 
             {/* Search and Filter Section */}
-            <div className="p-4 bg-white rounded-lg border border-slate-200 flex flex-col md:flex-row gap-4">
+            <div className="p-4 bg-white rounded-lg border border-slate-200 flex flex-col md:flex-row gap-4 shadow-sm">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
@@ -303,7 +348,6 @@ export const FacultyTab = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-
                 <select
                     className="w-full md:w-56 px-4 py-2 text-xs border border-gray-300 rounded-lg focus:border-teal-600 outline-none bg-white"
                     value={selectedDesignation}
@@ -317,46 +361,49 @@ export const FacultyTab = () => {
             </div>
 
             {/* Data Table */}
-            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm custom-scrollbar relative">
                 {isLoading ? (
                     <div className="text-center py-10 text-slate-500 text-sm">Loading faculty records...</div>
                 ) : (
-                    <table className="w-full text-left border-collapse text-xs">
+                    <table className="w-full text-left border-collapse text-xs min-w-max">
                         <thead>
                             <tr className="bg-slate-50 text-slate-900 font-bold border-b border-slate-200">
-                                <th className="p-3 border-r border-slate-200">Staff Member</th>
-                                <th className="p-3 border-r border-slate-200">Designation</th>
-                                <th className="p-3 border-r border-slate-200">Qualification</th>
-                                <th className="p-3 border-r border-slate-200">Specialization</th>
-                                <th className="p-3 border-r border-slate-200">Experience</th>
-                                <th className="p-3 border-r border-slate-200">Profile Photo</th>
-                                <th className="p-3 text-center">Actions</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Staff Member</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Designation</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Qualification</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Specialization</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Appt. Date</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Charge Date</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Address</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">Profile Photo</th>
+                                <th className="p-3 text-center whitespace-nowrap sticky right-0 bg-slate-50 border-l border-slate-200 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] z-10">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-slate-100">
                             {filteredFaculty.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="p-8 text-center text-slate-500">No faculty records found.</td>
+                                    <td colSpan="9" className="p-8 text-center text-slate-500 text-sm">No faculty records found.</td>
                                 </tr>
                             ) : (
                                 filteredFaculty.map((member) => (
-                                    <tr key={member.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
-                                        <td className="p-3 border-r border-slate-200 font-bold text-slate-900">{member.name}</td>
-                                        <td className="p-3 border-r border-slate-200">
+                                    <tr key={member.id} className="group border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                                        <td className="p-3 border-r border-slate-200 font-bold text-slate-900 whitespace-nowrap">{member.name}</td>
+                                        <td className="p-3 border-r border-slate-200 whitespace-nowrap">
                                             <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-200 flex items-center gap-1 w-max">
                                                 <Briefcase className="w-3 h-3" /> {member.designation}
                                             </span>
                                         </td>
-                                        <td className="p-3 border-r border-slate-200 font-medium">{member.qualification}</td>
-                                        <td className="p-3 border-r border-slate-200">{member.subject_specialization}</td>
-                                        <td className="p-3 border-r border-slate-200">{member.experience_years} Years</td>
+                                        <td className="p-3 border-r border-slate-200 font-medium whitespace-nowrap">{member.qualification}</td>
+                                        <td className="p-3 border-r border-slate-200 whitespace-nowrap">{member.subject_specialization}</td>
+                                        <td className="p-3 border-r border-slate-200 whitespace-nowrap">{formatDate(member.appointment_date)}</td>
+                                        <td className="p-3 border-r border-slate-200 whitespace-nowrap">{formatDate(member.charge_date)}</td>
+                                        <td className="p-3 border-r border-slate-200 max-w-[150px] truncate" title={member.address}>{member.address || '-'}</td>
 
                                         {/* Profile Photo Management Column */}
-                                        <td className="p-3 border-r border-slate-200">
+                                        <td className="p-3 border-r border-slate-200 whitespace-nowrap">
                                             {member.photo_url ? (
                                                 <div className="flex items-center gap-2">
                                                     <img src={member.photo_url} alt={member.name} className="w-7 h-7 rounded-full object-cover border border-slate-200" />
-
                                                     <label className="cursor-pointer p-1 text-slate-600 hover:text-teal-700 hover:bg-teal-50 rounded" title="Replace Photo">
                                                         <RefreshCw className="w-3.5 h-3.5" />
                                                         <input
@@ -366,7 +413,6 @@ export const FacultyTab = () => {
                                                             onChange={(e) => handlePhotoUpload(member, e.target.files[0])}
                                                         />
                                                     </label>
-
                                                     <button
                                                         onClick={() => handleRemovePhoto(member)}
                                                         className="p-1 text-red-600 hover:bg-red-50 rounded"
@@ -389,7 +435,7 @@ export const FacultyTab = () => {
                                             )}
                                         </td>
 
-                                        <td className="p-3 text-center space-x-2">
+                                        <td className="p-3 text-center space-x-2 whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 border-l border-slate-200 transition-colors shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.1)] z-10">
                                             <button
                                                 onClick={() => handleOpenModal(member)}
                                                 className="p-1.5 text-teal-700 hover:bg-teal-100 rounded transition-colors"
@@ -413,72 +459,108 @@ export const FacultyTab = () => {
                 )}
             </div>
 
-            {/* Add/Edit Modal (Photo Upload Removed) */}
+            {/* --- Modals --- */}
+
+            {/* Add/Edit Faculty Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 max-h-[90vh] overflow-y-auto">
-                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-bold text-slate-800 text-sm">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-sm mt-12 sm:mt-16">
+                    <div className="relative flex flex-col w-full max-w-xl h-[80vh] max-h-[80vh] bg-white shadow-2xl rounded-xl overflow-hidden my-auto">
+                        
+                        {/* Sticky Header */}
+                        <div className="relative px-4 py-3 border-b border-slate-100 bg-slate-50 shrink-0 text-center z-10">
+                            <h3 className="font-bold text-slate-800 text-sm sm:text-base">
                                 {editingFaculty ? 'Edit Staff Details' : 'Add New Staff'}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+                            <button 
+                                onClick={() => setIsModalOpen(false)} 
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded-full hover:bg-slate-200"
+                            >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
-                            <div>
-                                <label className="block font-bold text-slate-700 mb-1">Full Name</label>
-                                <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-teal-600" />
-                            </div>
+                        {/* Scrollable Form Fields Body */}
+                        <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+                            <form id="facultyForm" onSubmit={handleSubmit} className="space-y-3 text-xs">
+                                
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-0.5">Full Name</label>
+                                        <input required type="text" className="w-full px-2.5 py-1.5 border rounded-lg text-xs outline-none focus:border-teal-600"
+                                            value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-0.5">Designation</label>
+                                        <input required type="text" className="w-full px-2.5 py-1.5 border rounded-lg text-xs outline-none focus:border-teal-600"
+                                            value={formData.designation} onChange={e => setFormData({ ...formData, designation: e.target.value })} />
+                                    </div>
+                                </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">Designation</label>
-                                    <input required type="text" value={formData.designation} onChange={(e) => setFormData({ ...formData, designation: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-teal-600" />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-0.5">Qualification</label>
+                                        <input required type="text" className="w-full px-2.5 py-1.5 border rounded-lg text-xs outline-none focus:border-teal-600"
+                                            value={formData.qualification} onChange={e => setFormData({ ...formData, qualification: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-0.5">Subject Specialization</label>
+                                        <input required type="text" className="w-full px-2.5 py-1.5 border rounded-lg text-xs outline-none focus:border-teal-600"
+                                            value={formData.subject_specialization} onChange={e => setFormData({ ...formData, subject_specialization: e.target.value })} />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">Qualification</label>
-                                    <input required type="text" value={formData.qualification} onChange={(e) => setFormData({ ...formData, qualification: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-teal-600" />
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">Subject Specialization</label>
-                                    <input required type="text" value={formData.subject_specialization} onChange={(e) => setFormData({ ...formData, subject_specialization: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-teal-600" />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-0.5">Appointment Date</label>
+                                        <input type="date" className="w-full px-2.5 py-1.5 border rounded-lg text-xs outline-none focus:border-teal-600 bg-white"
+                                            value={formData.appointment_date} onChange={e => setFormData({ ...formData, appointment_date: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label className="block font-bold text-slate-700 mb-0.5">Charge Date</label>
+                                        <input type="date" className="w-full px-2.5 py-1.5 border rounded-lg text-xs outline-none focus:border-teal-600 bg-white"
+                                            value={formData.charge_date} onChange={e => setFormData({ ...formData, charge_date: e.target.value })} />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block font-bold text-slate-700 mb-1">Experience (Years)</label>
-                                    <input type="number" min="0" value={formData.experience_years} onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-teal-600" />
-                                </div>
-                            </div>
 
-                            <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
-                                <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting} className="px-4 py-2.5 text-xs font-bold bg-slate-100 rounded-lg">Cancel</button>
-                                <button type="submit" disabled={isSubmitting} className="px-4 py-2.5 text-xs font-bold text-white bg-teal-700 rounded-lg disabled:opacity-50">
-                                    {isSubmitting ? 'Saving...' : 'Save Record'}
-                                </button>
-                            </div>
-                        </form>
+                                <div>
+                                    <label className="block font-bold text-slate-700 mb-0.5">Address</label>
+                                    <textarea rows="3" className="w-full px-2.5 py-1.5 border rounded-lg text-xs outline-none focus:border-teal-600 resize-none"
+                                        value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} placeholder="Enter permanent or current address..." />
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Sticky Footer */}
+                        <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex justify-end gap-2 shrink-0 z-10">
+                            <button type="button" onClick={() => setIsModalOpen(false)} disabled={isSubmitting}
+                                className="px-3.5 py-2 text-xs font-bold bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                Cancel
+                            </button>
+                            <button form="facultyForm" type="submit" disabled={isSubmitting}
+                                className="px-3.5 py-2 text-xs font-bold text-white bg-teal-700 hover:bg-teal-800 rounded-lg disabled:opacity-50 transition-colors">
+                                {isSubmitting ? 'Saving...' : (editingFaculty ? 'Update Record' : 'Save Record')}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Custom Delete Confirmation Modal */}
             {deleteTarget && (
-                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-200 p-6 text-center space-y-4">
-                        <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-                            <AlertTriangle className="w-6 h-6" />
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/50 backdrop-blur-sm mt-12 sm:mt-16">
+                    <div className="flex flex-col w-full max-w-sm bg-white shadow-2xl rounded-xl overflow-hidden my-auto">
+                        <div className="p-6 text-center space-y-4 shrink-0">
+                            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
+                                <AlertTriangle className="w-6 h-6" />
+                            </div>
                         </div>
-                        <div className="space-y-1">
+                        <div className="px-6 pb-2 space-y-1 text-center">
                             <h3 className="font-bold text-slate-900 text-base">Delete Staff Member?</h3>
                             <p className="text-xs text-slate-500">
                                 Are you sure you want to delete <span className="font-semibold text-slate-700">{deleteTarget.name}</span>? This action cannot be undone.
                             </p>
                         </div>
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex gap-2 p-6 pt-4 shrink-0">
                             <button
                                 type="button"
                                 onClick={() => setDeleteTarget(null)}
@@ -500,25 +582,30 @@ export const FacultyTab = () => {
 
             {/* Bulk Delete Scope Modal */}
             {isDeleteAllModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-200 p-6 text-center space-y-4">
-                        <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-                            <AlertTriangle className="w-6 h-6" />
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/50 backdrop-blur-sm mt-12 sm:mt-16">
+                    <div className="flex flex-col w-full max-w-sm max-h-[80vh] bg-white shadow-2xl rounded-xl overflow-hidden my-auto">
+                        <div className="p-6 pb-4 text-center shrink-0">
+                            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
+                                <AlertTriangle className="w-6 h-6" />
+                            </div>
                         </div>
-                        <div className="space-y-3">
-                            <h3 className="font-bold text-slate-900 text-base">Bulk Delete Faculty</h3>
-                            <p className="text-xs text-slate-500">
-                                Select scope to delete faculty members. This action cannot be undone.
-                            </p>
 
-                            <div className="space-y-2 text-left">
+                        <div className="px-6 space-y-3 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+                            <div className="text-center">
+                                <h3 className="font-bold text-slate-900 text-base">Bulk Delete Faculty</h3>
+                                <p className="text-xs text-slate-500">
+                                    Select scope to delete faculty members. This action cannot be undone.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2 text-left mt-4">
                                 <label className="block text-[11px] font-bold text-slate-700">Delete Scope Type</label>
                                 <select
                                     className="w-full p-2.5 border rounded-lg text-xs outline-none focus:border-teal-600 bg-white font-medium"
                                     value={deleteScope.type}
                                     onChange={(e) => setDeleteScope({ type: e.target.value, value: '' })}
                                 >
-                                    <option value="all">All Faculty Members (Entire Institution)</option>
+                                    <option value="all">All Faculty Members</option>
                                     <option value="designation">By Specific Designation</option>
                                 </select>
 
@@ -537,7 +624,7 @@ export const FacultyTab = () => {
                             </div>
                         </div>
 
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex gap-2 p-6 pt-4 shrink-0">
                             <button
                                 type="button"
                                 onClick={() => setIsDeleteAllModalOpen(false)}
@@ -561,63 +648,69 @@ export const FacultyTab = () => {
 
             {/* CSV Import Modal */}
             {isCsvModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200">
-                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/50 backdrop-blur-sm mt-12 sm:mt-16">
+                    <div className="flex flex-col w-full max-w-md max-h-[80vh] bg-white shadow-2xl rounded-xl overflow-hidden my-auto">
+                        <div className="relative px-4 py-3 border-b border-slate-100 bg-slate-50 shrink-0 text-center z-10">
+                            <h3 className="font-bold text-slate-800 text-sm sm:text-base flex items-center justify-center gap-2">
                                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
                                 Import Faculty from CSV
                             </h3>
-                            <button onClick={() => { setIsCsvModalOpen(false); setCsvFile(null); }} className="text-slate-400 hover:text-slate-700">
+                            <button 
+                                onClick={() => { setIsCsvModalOpen(false); setCsvFile(null); }} 
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded-full hover:bg-slate-200"
+                            >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleCsvUpload} className="p-5 space-y-4 text-xs">
-                            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 space-y-1">
-                                <p className="font-bold">CSV Column Requirements:</p>
-                                <p className="text-[11px] text-slate-500">
-                                    Your CSV file must include headers matching: <code className="text-teal-700 font-semibold">name, designation, qualification, subject_specialization, experience_years</code>
-                                </p>
-                                <p className="text-[10px] text-slate-400 italic mt-1">Note: Photos can be uploaded manually after importing.</p>
-                            </div>
-
-                            <div>
-                                <label className="block font-bold text-slate-700 mb-1">Select CSV File</label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50">
-                                    <input
-                                        type="file"
-                                        accept=".csv"
-                                        className="hidden"
-                                        id="faculty-csv-upload"
-                                        onChange={(e) => setCsvFile(e.target.files[0])}
-                                    />
-                                    <label htmlFor="faculty-csv-upload" className="cursor-pointer flex flex-col items-center">
-                                        <FileSpreadsheet className="w-8 h-8 text-emerald-600 mb-2" />
-                                        <span className="font-semibold text-slate-700">{csvFile ? csvFile.name : 'Click to browse CSV file'}</span>
-                                        <span className="text-[10px] text-slate-400 mt-0.5">Supports standard comma-separated files (.csv)</span>
-                                    </label>
+                        <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+                            <form id="csvForm" onSubmit={handleCsvUpload} className="space-y-4 text-xs">
+                                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 space-y-1">
+                                    <p className="font-bold">CSV Column Requirements:</p>
+                                    <p className="text-[11px] text-slate-500">
+                                        Headers must match: <code className="text-teal-700 font-semibold">name, designation, qualification, subject_specialization, appointment_date, charge_date, address</code>
+                                    </p>
+                                    <p className="text-[10px] text-slate-400 italic mt-1">Note: Photos can be uploaded manually after importing.</p>
                                 </div>
-                            </div>
 
-                            <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => { setIsCsvModalOpen(false); setCsvFile(null); }}
-                                    disabled={isSubmitting}
-                                    className="px-4 py-2.5 text-xs font-bold bg-slate-100 rounded-lg"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting || !csvFile}
-                                    className="px-4 py-2.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg disabled:opacity-50"
-                                >
-                                    {isSubmitting ? 'Importing...' : 'Upload & Import'}
-                                </button>
-                            </div>
-                        </form>
+                                <div>
+                                    <label className="block font-bold text-slate-700 mb-1">Select CSV File</label>
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <input
+                                            type="file"
+                                            accept=".csv"
+                                            className="hidden"
+                                            id="faculty-csv-upload"
+                                            onChange={(e) => setCsvFile(e.target.files[0])}
+                                        />
+                                        <label htmlFor="faculty-csv-upload" className="cursor-pointer flex flex-col items-center">
+                                            <FileSpreadsheet className="w-8 h-8 text-emerald-600 mb-2" />
+                                            <span className="font-semibold text-slate-700">{csvFile ? csvFile.name : 'Click to browse CSV file'}</span>
+                                            <span className="text-[10px] text-slate-400 mt-0.5">Supports standard comma-separated files (.csv)</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex justify-end gap-2 shrink-0 z-10">
+                            <button
+                                type="button"
+                                onClick={() => { setIsCsvModalOpen(false); setCsvFile(null); }}
+                                disabled={isSubmitting}
+                                className="px-3.5 py-2 text-xs font-bold bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                form="csvForm"
+                                type="submit"
+                                disabled={isSubmitting || !csvFile}
+                                className="px-3.5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg disabled:opacity-50 transition-colors"
+                            >
+                                {isSubmitting ? 'Importing...' : 'Upload & Import'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

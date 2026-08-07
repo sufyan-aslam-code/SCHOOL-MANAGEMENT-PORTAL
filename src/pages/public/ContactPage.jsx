@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, Loader2 } from 'lucide-react';
+import { 
+  MapPin, Phone, Mail, Clock, Send, CheckCircle2, Loader2,
+  Facebook, Twitter, Instagram, Youtube 
+} from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
 import toast from 'react-hot-toast';
 
@@ -60,6 +63,13 @@ export const ContactPage = () => {
   const locationAddress = settings?.location_address || 'Abbottabad, Khyber Pakhtunkhwa';
   const schoolPhone = settings?.phone || '+92 992 000000';
   const schoolEmail = settings?.email || 'info@ghskasala.edu.pk';
+  
+  // Check if at least one social media link exists in the database
+  const hasSocialLinks = 
+    settings?.facebook_url || 
+    settings?.twitter_url || 
+    settings?.instagram_url || 
+    settings?.youtube_url;
 
   return (
     <div className="min-h-screen bg-slate-50 pt-32 sm:pt-36 pb-16">
@@ -130,6 +140,37 @@ export const ContactPage = () => {
                   <span className="text-slate-400 text-xs">08:00 AM - 01:30 PM (Monday to Saturday)</span>
                 </div>
               </div>
+
+              {/* Dynamic Social Media Section */}
+              {hasSocialLinks && (
+                <div className="flex items-start gap-4 border-t border-slate-800 pt-6">
+                  <div className="w-full">
+                    <strong className="text-slate-200 block mb-3 text-sm">Follow Us on Social Media</strong>
+                    <div className="flex gap-3">
+                      {settings?.facebook_url && (
+                        <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-teal-800/80 border border-teal-600/30 flex items-center justify-center text-amber-400 hover:bg-blue-600 hover:text-white hover:border-transparent transition-all" title="Facebook">
+                          <Facebook className="w-5 h-5" />
+                        </a>
+                      )}
+                      {settings?.twitter_url && (
+                        <a href={settings.twitter_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-teal-800/80 border border-teal-600/30 flex items-center justify-center text-amber-400 hover:bg-sky-500 hover:text-white hover:border-transparent transition-all" title="Twitter/X">
+                          <Twitter className="w-5 h-5" />
+                        </a>
+                      )}
+                      {settings?.instagram_url && (
+                        <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-teal-800/80 border border-teal-600/30 flex items-center justify-center text-amber-400 hover:bg-pink-600 hover:text-white hover:border-transparent transition-all" title="Instagram">
+                          <Instagram className="w-5 h-5" />
+                        </a>
+                      )}
+                      {settings?.youtube_url && (
+                        <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-teal-800/80 border border-teal-600/30 flex items-center justify-center text-amber-400 hover:bg-red-600 hover:text-white hover:border-transparent transition-all" title="YouTube">
+                          <Youtube className="w-5 h-5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

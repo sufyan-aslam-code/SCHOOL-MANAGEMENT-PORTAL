@@ -26,7 +26,9 @@ CREATE TABLE public.faculty (
     designation TEXT NOT NULL,
     qualification TEXT NOT NULL,
     subject_specialization TEXT NOT NULL,
-    experience_years INTEGER DEFAULT 0,
+    appointment_date DATE,
+    charge_date DATE,
+    address TEXT,
     photo_url TEXT,
     display_order INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -73,16 +75,23 @@ CREATE TABLE public.settings (
     summer_timings TEXT DEFAULT '07:30 AM - 01:30 PM (Mon - Sat)'::text,
     winter_timings TEXT DEFAULT '08:30 AM - 02:00 PM (Mon - Sat)'::text,
     friday_hours TEXT DEFAULT 'Closing early at 12:00 PM'::text
+    facebook_url TEXT DEFAULT '',
+    twitter_url TEXT DEFAULT '',
+    instagram_url TEXT DEFAULT '',
+    youtube_url TEXT DEFAULT '';
 );
 
 -- Students
 CREATE TABLE public.students (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    admission_no INTEGER,
     roll_no INTEGER NOT NULL,
     class_id UUID REFERENCES public.classes(id),
     name TEXT NOT NULL,
     father_name TEXT NOT NULL,
     session_id UUID REFERENCES public.sessions(id),
+    doa DATE,
+    dob DATE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     gender TEXT NOT NULL DEFAULT 'Unknown'::text,
@@ -98,4 +107,26 @@ CREATE TABLE public.user_profiles (
     phone TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+-- Gallery
+CREATE TABLE public.gallery (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    image_url TEXT NOT NULL,
+    storage_path TEXT NOT NULL, -- Essential for deleting the image from the bucket later
+    caption TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() -- This serves as your exact Date and Time for sorting
+);
+
+-- Announcements
+CREATE TABLE public.announcements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    image_url TEXT, -- Added to support flyers/banners
+    publish_date DATE DEFAULT CURRENT_DATE,
+    is_important BOOLEAN DEFAULT false,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );

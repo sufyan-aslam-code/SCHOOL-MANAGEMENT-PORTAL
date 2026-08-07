@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Save, Building, Phone, Mail, User, CheckCircle,
     Loader2, MapPin, Calendar, Image as ImageIcon,
-    MessageSquare, Clock, X
+    MessageSquare, Clock, X, Share2
 } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
 import { supabase } from '../../lib/supabase';
@@ -33,6 +33,10 @@ export const SettingsTab = () => {
         summer_timings: '',
         winter_timings: '',
         friday_hours: '',
+        facebook_url: '',
+        twitter_url: '',
+        instagram_url: '',
+        youtube_url: '',
     });
 
     useEffect(() => {
@@ -54,6 +58,10 @@ export const SettingsTab = () => {
                 summer_timings: settings.summer_timings || '07:30 AM - 01:30 PM (Mon - Sat)',
                 winter_timings: settings.winter_timings || '08:30 AM - 02:00 PM (Mon - Sat)',
                 friday_hours: settings.friday_hours || 'Closing early at 12:00 PM',
+                facebook_url: settings.facebook_url || '',
+                twitter_url: settings.twitter_url || '',
+                instagram_url: settings.instagram_url || '',
+                youtube_url: settings.youtube_url || '',
             });
         }
     }, [settings]);
@@ -340,6 +348,48 @@ export const SettingsTab = () => {
                         <div className="sm:col-span-2">
                             <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-slate-400" /> Complete Location Address</label>
                             <textarea name="location_address" value={formData.location_address} onChange={handleChange} required rows={3} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all resize-none" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Social Media Links Section */}
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="bg-slate-50 px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center gap-2">
+                        <Share2 className="w-4 h-4 text-slate-500" />
+                        <h3 className="font-bold text-sm text-slate-800">Social Media Links</h3>
+                    </div>
+                    <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Facebook URL</label>
+                            <input
+                                type="url" name="facebook_url" value={formData.facebook_url} onChange={handleChange}
+                                placeholder="https://facebook.com/..."
+                                className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Twitter/X URL</label>
+                            <input
+                                type="url" name="twitter_url" value={formData.twitter_url} onChange={handleChange}
+                                placeholder="https://twitter.com/..."
+                                className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Instagram URL</label>
+                            <input
+                                type="url" name="instagram_url" value={formData.instagram_url} onChange={handleChange}
+                                placeholder="https://instagram.com/..."
+                                className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">YouTube URL</label>
+                            <input
+                                type="url" name="youtube_url" value={formData.youtube_url} onChange={handleChange}
+                                placeholder="https://youtube.com/..."
+                                className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                            />
                         </div>
                     </div>
                 </div>
