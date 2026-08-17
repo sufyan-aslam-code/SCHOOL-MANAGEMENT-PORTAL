@@ -503,10 +503,10 @@ export const StudentsTab = () => {
                             <tr className="bg-slate-50 text-slate-900 font-bold border-b border-slate-200">
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">S.No</th>
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">Admission No</th>
+                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">DOA</th>
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">Roll No</th>
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">Name</th>
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">Father Name</th>
-                                <th className="p-3 border-r border-slate-200 whitespace-nowrap">DOA</th>
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">DOB</th>
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">Class</th>
                                 <th className="p-3 border-r border-slate-200 whitespace-nowrap">Session</th>
@@ -532,10 +532,10 @@ export const StudentsTab = () => {
                                     <tr key={student.id} className="group border-b border-slate-200 hover:bg-slate-50 transition-colors">
                                         <td className="p-3 border-r border-slate-200 text-slate-500 font-medium whitespace-nowrap">{index + 1}</td>
                                         <td className="p-3 border-r border-slate-200 text-slate-900 whitespace-nowrap">{student.admission_no || '-'}</td>
+                                        <td className="p-3 border-r border-slate-200 text-slate-600 whitespace-nowrap">{formatDate(student.doa)}</td>
                                         <td className="p-3 border-r border-slate-200 text-slate-900 whitespace-nowrap">{student.roll_no}</td>
                                         <td className="p-3 border-r border-slate-200 text-slate-900 font-medium whitespace-nowrap">{student.name}</td>
                                         <td className="p-3 border-r border-slate-200 text-slate-600 whitespace-nowrap">{student.father_name || '-'}</td>
-                                        <td className="p-3 border-r border-slate-200 text-slate-600 whitespace-nowrap">{formatDate(student.doa)}</td>
                                         <td className="p-3 border-r border-slate-200 text-slate-600 whitespace-nowrap">{formatDate(student.dob)}</td>
                                         <td className="p-3 border-r border-slate-200 text-slate-600 whitespace-nowrap">{student.class_name || '-'}</td>
                                         <td className="p-3 border-r border-slate-200 text-slate-600 whitespace-nowrap">{student.session_name || '-'}</td>

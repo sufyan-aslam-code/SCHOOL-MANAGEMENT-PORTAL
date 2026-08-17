@@ -34,7 +34,7 @@ const AdminGalleryCard = ({ image, onEdit, onDelete, formatDate }) => {
                     className="w-full h-full object-cover"
                 />
                 {/* Action Overlay */}
-                <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 p-1 rounded-lg shadow-sm backdrop-blur-sm">
+                <div className="absolute top-2 right-2 flex gap-1.5 bg-white/90 p-1 rounded-lg shadow-sm backdrop-blur-sm">
                     <button
                         onClick={() => onEdit(image)}
                         className="p-1.5 text-teal-700 hover:bg-teal-100 rounded transition-colors"

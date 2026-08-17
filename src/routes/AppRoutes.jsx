@@ -20,7 +20,6 @@ const FacultyPage = lazy(() => import('../pages/public/FacultyPage'));
 const ContactPage = lazy(() => import('../pages/public/ContactPage'));
 const ResultCheckPage = lazy(() => import('../pages/public/ResultCheckPage'));
 const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'));
-const StudentsPage = lazy(() => import('../pages/public/StudentsPage'));
 const GalleryPage = lazy(() => import('../pages/public/GalleryPage'));
 const AnnouncementPage = lazy(() => import('../pages/public/PublicNoticeBoard'));
 
@@ -54,7 +53,6 @@ export const AppRoutes = () => {
           <Route path="/faculty" element={<FacultyPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/results" element={<ResultCheckPage />} />
-          <Route path="/students" element={<StudentsPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/announcements" element={<AnnouncementPage />} />
         </Route>
