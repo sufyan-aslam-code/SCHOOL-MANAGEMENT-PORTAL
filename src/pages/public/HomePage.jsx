@@ -20,7 +20,7 @@ export const HomePage = () => {
   const { students, loading: studentsLoading } = useStudents();
 
   const formatStudentCount = (count) => {
-    if (count <= 0) return '0+';
+    if (count < 50) return '200+';
     const rounded = Math.floor(count / 10) * 10;
     return `${rounded}+`;
   };
