@@ -102,7 +102,6 @@ export const Footer = () => {
             {[
               { name: 'Home', path: '/' },
               { name: 'About School', path: '/about' },
-              { name: 'Students Hub', path: '/students' },
               { name: 'Faculty & Teachers', path: '/faculty' },
               { name: 'Check DMC Results', path: '/results' },
               { name: 'Contact & Location', path: '/contact' },
